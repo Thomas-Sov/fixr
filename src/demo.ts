@@ -1,5 +1,4 @@
-// ts-ignore
-export const brokenFeature = (text) =>{
-    const words = text
-    return words
+export const fixedFeature = (text: string): string[] => {
+    const words: string[] = text.split(' ');
+    return words;
 }
