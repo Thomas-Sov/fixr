@@ -28,28 +28,25 @@ const CodeGen = () => {
       console.log("here is the monaco instance:", monaco);
     }
   }, [monaco]);
-
   const fixTheCode = async () => {
     setLoading(true);
     try {
-      const sonar = await fetch(
-        "https://fixr-code.onrender.com/fix-code",
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          method: "POST",
-          body: JSON.stringify({
-            code: JSON.stringify(inputCode),
-            file_path: filePath,
-          }),
-        }
-      );
-      console.log(sonar, 'sonar');
-      
+      const sonar = await fetch("https://fixr-code.onrender.com/fix-code", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          code: inputCode,
+          file_path: filePath,
+        }),
+      });
+
       const { eslint_output, eslint_formatted_results, fixed_code } =
         await sonar.json();
-      setUpdatedCode(fixed_code);
+
+        const newtest = fixed_code.replace(/^\{\s*"code":\s*/, '').replace(/\s*}$/, '')
+      setUpdatedCode(newtest);
 
       setShowCompare(true);
     } catch (error) {
@@ -87,7 +84,7 @@ const CodeGen = () => {
     } catch (error) {
       alert(error);
       setSubmitting(false);
-    } 
+    }
   };
   const clearAll = () => {
     setInputCode("");
@@ -100,7 +97,7 @@ const CodeGen = () => {
       <Box paddingTop={10} paddingX={10}>
         <PageHeader />
       </Box>
-  
+
       {showCompare ? (
         <Flex
           flexDirection={"column"}
@@ -253,7 +250,7 @@ const CodeGen = () => {
                   color: !inputCode ? "#98A2B3" : "#F2F4F7",
                 }}
                 onClick={() => {
-                  if(!inputCode) return
+                  if (!inputCode) return;
                   if (showCompare) {
                     setShowCompare(false);
                   } else {
