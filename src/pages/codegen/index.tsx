@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import Editor, { useMonaco, DiffEditor } from "@monaco-editor/react";
 import {
@@ -19,8 +20,9 @@ const CodeGen = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showCompare, setShowCompare] = useState<boolean>(false);
   const [filePath, setFilePath] = useState<string>("");
-  const handleSetFilePath = (event: any) => {
-    setFilePath(event.target.value);
+  // ts-ignore
+  const handleSetFilePath = (value: string) => {
+    setFilePath(value);
   };
   useEffect(() => {
     if (monaco) {
@@ -206,7 +208,6 @@ const CodeGen = () => {
                 >
                   Clear All
                 </Button>
-                <input type="text" onChange={handleSetFilePath} />
               </Flex>
               <Button
                 border={"1px solid #EAECF0"}
