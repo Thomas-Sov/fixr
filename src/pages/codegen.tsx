@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import Editor, { useMonaco, DiffEditor } from "@monaco-editor/react";
 import {
@@ -13,14 +12,19 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { PageHeader } from "~/components/PageHeader";
+import { useUser } from "@clerk/nextjs";
+import { brokenFeature } from "~/demo";
 const CodeGen = () => {
+  const user = useUser();
   const monaco = useMonaco();
   const [updatedCode, setUpdatedCode] = useState<string>("");
   const [inputCode, setInputCode] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [showCompare, setShowCompare] = useState<boolean>(false);
   const [filePath, setFilePath] = useState<string>("");
- 
+
+  console.log(user);
   useEffect(() => {
     if (monaco) {
       console.log("here is the monaco instance:", monaco);
@@ -31,7 +35,7 @@ const CodeGen = () => {
     setLoading(true);
     try {
       const sonar = await fetch(
-        "https://fixr-eslint-sonarlint-validation.onrender.com/fixr ",
+        "https://fixr-eslint-sonarlint-validation.onrender.com/fixr",
         {
           headers: {
             "Content-Type": "application/json",
@@ -47,15 +51,43 @@ const CodeGen = () => {
       const { eslint_output, eslint_formatted_results, fixed_code } =
         await sonar.json();
       setUpdatedCode(fixed_code);
-    
 
       setShowCompare(true);
     } catch (error) {
       // catch error
       console.log(error);
-        alert(error)
+      alert(error);
     } finally {
-        setLoading(false);
+      setLoading(false);
+    }
+  };
+  const submitToGitHb = async () => {
+    try {
+      setSubmitting(true);
+      await fetch("https://fixr-code-change.onrender.com/api/make-changes", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          codeChanges: [
+            {
+              filePath: filePath,
+              content: updatedCode,
+            },
+          ],
+          commitMessage: "Automated code change updates",
+          githubToken: "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",
+          owner: "Thomas-Sov",
+          repo: "fixr",
+          baseBranch: "main",
+          featureBranch: `automated-changed-pr/${filePath}`,
+        }),
+      });
+    } catch (error) {
+      alert(error);
+    } finally {
+      setSubmitting(false);
     }
   };
   const clearAll = () => {
@@ -69,7 +101,7 @@ const CodeGen = () => {
       <Box paddingTop={10} paddingX={10}>
         <PageHeader />
       </Box>
-
+  
       {showCompare ? (
         <Flex
           flexDirection={"column"}
@@ -116,7 +148,6 @@ const CodeGen = () => {
               width={"100%"}
               border={"1px solid #EAECF0"}
             >
-
               <Button
                 backgroundColor={"#F2F4F7"}
                 onClick={() => {
@@ -137,7 +168,12 @@ const CodeGen = () => {
               width={"100%"}
               border={"1px solid #EAECF0"}
             >
-              <Button backgroundColor={"#7F56D9"} color={"white"}>
+              <Button
+                backgroundColor={"#7F56D9"}
+                color={"white"}
+                onClick={submitToGitHb}
+                disabled={submitting}
+              >
                 Create Pull Request
               </Button>
             </Flex>
@@ -205,13 +241,14 @@ const CodeGen = () => {
                     color: !inputCode ? "#98A2B3" : "#7F56D9",
                   }}
                   onClick={clearAll}
+                  disabled={loading}
                 >
                   Clear All
                 </Button>
               </Flex>
               <Button
                 border={"1px solid #EAECF0"}
-                disabled={!inputCode}
+                disabled={!inputCode || loading}
                 style={{
                   backgroundColor: !inputCode ? "#F2F4F7" : "#7F56D9",
                   color: !inputCode ? "#98A2B3" : "#F2F4F7",
@@ -224,7 +261,24 @@ const CodeGen = () => {
                   }
                 }}
               >
-                Submit
+                {loading ? (
+                  <Flex
+                    height="20px"
+                    width="20px"
+                    alignItems="center"
+                    justifyContent="center"
+                    alignContent={"center"}
+                  >
+                    <Spinner
+                      thickness="2px"
+                      speed="0.65s"
+                      emptyColor="gray.200"
+                      color="black.500"
+                    />
+                  </Flex>
+                ) : (
+                  <>Submit</>
+                )}
               </Button>
             </Flex>
           </Flex>
@@ -236,11 +290,11 @@ const CodeGen = () => {
           >
             {loading ? (
               <Flex
-              mt={'50%'}
+                mt={"50%"}
                 width="100%"
                 alignItems="center"
                 justifyContent="center"
-                alignContent={'center'}
+                alignContent={"center"}
               >
                 <Spinner
                   thickness="4px"
