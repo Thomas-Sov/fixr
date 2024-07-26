@@ -13,7 +13,6 @@ import {
 } from "@chakra-ui/react";
 import { PageHeader } from "~/components/PageHeader";
 import { useUser } from "@clerk/nextjs";
-import { brokenFeature } from "~/demo";
 const CodeGen = () => {
   const user = useUser();
   const monaco = useMonaco();
@@ -24,7 +23,6 @@ const CodeGen = () => {
   const [showCompare, setShowCompare] = useState<boolean>(false);
   const [filePath, setFilePath] = useState<string>("");
 
-  console.log(user);
   useEffect(() => {
     if (monaco) {
       console.log("here is the monaco instance:", monaco);
@@ -35,7 +33,7 @@ const CodeGen = () => {
     setLoading(true);
     try {
       const sonar = await fetch(
-        "https://fixr-eslint-sonarlint-validation.onrender.com/fixr",
+        "https://fixr-code.onrender.com/fix-code",
         {
           headers: {
             "Content-Type": "application/json",
@@ -47,7 +45,8 @@ const CodeGen = () => {
           }),
         }
       );
-
+      console.log(sonar, 'sonar');
+      
       const { eslint_output, eslint_formatted_results, fixed_code } =
         await sonar.json();
       setUpdatedCode(fixed_code);
@@ -64,7 +63,7 @@ const CodeGen = () => {
   const submitToGitHb = async () => {
     try {
       setSubmitting(true);
-      await fetch("https://fixr-code-change.onrender.com/api/make-changes", {
+      await fetch("https://fixr-code.onrender.com/pull-request", {
         headers: {
           "Content-Type": "application/json",
         },
@@ -77,18 +76,18 @@ const CodeGen = () => {
             },
           ],
           commitMessage: "Automated code change updates",
-          githubToken: "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",
+          githubToken: "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",
           owner: "Thomas-Sov",
           repo: "fixr",
           baseBranch: "main",
-          featureBranch: `automated-changed-pr/${filePath}`,
+          featureBranch: `automated-changed-pr/${filePath}1`,
         }),
       });
+      setSubmitting(false);
     } catch (error) {
       alert(error);
-    } finally {
       setSubmitting(false);
-    }
+    } 
   };
   const clearAll = () => {
     setInputCode("");
@@ -254,6 +253,7 @@ const CodeGen = () => {
                   color: !inputCode ? "#98A2B3" : "#F2F4F7",
                 }}
                 onClick={() => {
+                  if(!inputCode) return
                   if (showCompare) {
                     setShowCompare(false);
                   } else {
