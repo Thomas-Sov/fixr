@@ -19,11 +19,11 @@ a {
   margin-top: 50px;
 }
 .monaco-diff-editor .editor.original {
-  margin-right: 64px; /* Adjust the value as needed */
+  margin-right: 32px; /* Adjust the value as needed */
 }
 
 .monaco-diff-editor .editor.modified {
-  margin-left: 64px; /* Adjust the value as needed */
+  margin-left: 32px; /* Adjust the value as needed */
 }
 
 

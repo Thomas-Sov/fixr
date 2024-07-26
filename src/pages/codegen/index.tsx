@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from "react";
 import Editor, { useMonaco, DiffEditor } from "@monaco-editor/react";
-import { Container, Flex, Button, Box, Text, Image } from "@chakra-ui/react";
+import {
+  Container,
+  Flex,
+  Button,
+  Box,
+  Text,
+  Image,
+  Input,
+  keyframes,
+  Spinner,
+} from "@chakra-ui/react";
 import { PageHeader } from "~/components/PageHeader";
 const CodeGen = () => {
   const monaco = useMonaco();
   const [updatedCode, setUpdatedCode] = useState<string>("");
-  const [inputCode, setInputCode] = useState<string>("asdasd");
+  const [inputCode, setInputCode] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const [showCompare, setShowCompare] = useState<boolean>(false);
   const [filePath, setFilePath] = useState<string>("");
   const handleSetFilePath = (event: any) => {
@@ -16,7 +27,9 @@ const CodeGen = () => {
       console.log("here is the monaco instance:", monaco);
     }
   }, [monaco]);
+
   const fixTheCode = async () => {
+    setLoading(true);
     try {
       const sonar = await fetch(
         "https://fixr-eslint-sonarlint-validation.onrender.com/fixr ",
@@ -25,32 +38,18 @@ const CodeGen = () => {
             "Content-Type": "application/json",
           },
           method: "POST",
-          body: JSON.stringify({ code: inputCode, file_path: filePath }),
+          body: JSON.stringify({
+            code: JSON.stringify(inputCode),
+            file_path: filePath,
+          }),
         }
       );
-      const codeFixer = await fetch(
-        "https://code-analyzer.onrender.com/fix-code",
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          method: "POST",
-          body: JSON.stringify({ code: inputCode }),
-        }
-      );
-      const { eslint_formatted_results } = await sonar.json();
-      const data = await codeFixer.json();
-      console.log(eslint_formatted_results, 'eslint_formatted_results');
-      if (eslint_formatted_results) {
-        // send error to backend and then fix it
-      } else {
-        // call to backend to  improve the code
-      }
-      // https://code-analyzer.onrender.com/fix-code
-      // set updated code , random function down here
-      const jsonObject = await JSON.parse(data.cleanedCode.content[0].text);
 
-      setUpdatedCode(jsonObject.code);
+      const { eslint_output, eslint_formatted_results, fixed_code } =
+        await sonar.json();
+      setUpdatedCode(fixed_code);
+      setLoading(false);
+
       setShowCompare(true);
     } catch (error) {
       // catch error
@@ -77,35 +76,76 @@ const CodeGen = () => {
           gap={"32px"}
           paddingBottom={"100px"}
           overflow={"hidden"}
+          px={"40px"}
         >
-          <DiffEditor
-            original={inputCode}
-            modified={updatedCode}
-            height="70vh"
-            language="javascript"
-          />
-          <Flex
-            justifyContent={"space-between"}
-            padding={"24px"}
-            width={"50%"}
-            border={"1px solid #EAECF0"}
-          >
-            <Flex>
-              <Button>Clear All</Button>
-              <input type="text" onChange={handleSetFilePath} />
-            </Flex>
-            <Button
-              backgroundColor={"#F2F4F7"}
-              onClick={() => {
-                if (showCompare) {
-                  setShowCompare(false);
-                } else {
-                  fixTheCode();
-                }
-              }}
+          <Box position={"relative"}>
+            <DiffEditor
+              original={inputCode}
+              modified={updatedCode}
+              height="70vh"
+              language="javascript"
+            />
+
+            <Flex
+              flexDirection={"column"}
+              width={"48%"}
+              position={"absolute"}
+              bottom={-5}
+              background={"white"}
             >
-              {showCompare ? "Cancel" : "Submit"}
-            </Button>
+              <Text pb={2}>File path</Text>
+              <Input
+                onClick={(event) => {
+                  setFilePath(event.target?.value);
+                }}
+                width={"100%"}
+                defaultValue={filePath}
+                placeholder="Enter file path"
+              ></Input>
+              <Text color={"#475467"} pt={1}>
+                The file path of the original code file
+              </Text>
+            </Flex>
+          </Box>
+          <Flex gap={"64px"} mt={30}>
+            <Flex
+              justifyContent={"space-between"}
+              padding={"24px"}
+              width={"100%"}
+              border={"1px solid #EAECF0"}
+            >
+              <Button
+                backgroundColor={"white"}
+                color={"#6941C6"}
+                border={"1px solid #D6BBFB"}
+              >
+                Clear
+              </Button>
+
+              <Button
+                backgroundColor={"#F2F4F7"}
+                onClick={() => {
+                  if (showCompare) {
+                    setShowCompare(false);
+                  } else {
+                    fixTheCode();
+                  }
+                }}
+              >
+                {showCompare ? "Cancel" : "Submit"}
+              </Button>
+            </Flex>
+
+            <Flex
+              justifyContent={"end"}
+              padding={"24px"}
+              width={"100%"}
+              border={"1px solid #EAECF0"}
+            >
+              <Button backgroundColor={"#7F56D9"} color={"white"}>
+                Create Pull Request
+              </Button>
+            </Flex>
           </Flex>
         </Flex>
       ) : (
@@ -117,7 +157,7 @@ const CodeGen = () => {
         >
           <Flex
             flexDirection={"column"}
-            gap={"50px"}
+            gap={"30px"}
             maxWidth={"1280px"}
             width="50%"
             paddingLeft={"40px"}
@@ -130,7 +170,7 @@ const CodeGen = () => {
               border={"1px solid #EAECF0"}
             >
               <Editor
-                height="624px"
+                height="454px"
                 width="100%"
                 onChange={(value) => {
                   setInputCode(value ?? "");
@@ -140,7 +180,19 @@ const CodeGen = () => {
                 language="javascript"
               />
             </Box>
-
+            <Flex flexDirection={"column"} width={"100%"}>
+              <Text pb={2}>File path</Text>
+              <Input
+                onClick={(event) => {
+                  setFilePath(event.target?.value);
+                }}
+                width={"100%"}
+                placeholder="Enter file path"
+              ></Input>
+              <Text color={"#475467"} pt={1}>
+                The file path of the original code file
+              </Text>
+            </Flex>
             <Flex
               justifyContent={"space-between"}
               padding={"24px"}
@@ -154,7 +206,7 @@ const CodeGen = () => {
                   style={{
                     border: !inputCode
                       ? "1px solid #EAECF0"
-                      : "1px solid #7F56D9)",
+                      : "1px solid #7F56D9",
                     color: !inputCode ? "#98A2B3" : "#7F56D9",
                   }}
                   onClick={clearAll}
@@ -185,75 +237,94 @@ const CodeGen = () => {
           <Box
             width="50%"
             height="100%"
+            minHeight={"100vh"}
             background="linear-gradient(135deg, #B39FFF 0%, #6A1ED2 100%)"
           >
-            <Flex
-              gap={"40px"}
-              paddingLeft={"34px"}
-              flexDirection={"column"}
-              paddingTop={"34px"}
-              width={"100%"}
-            >
-              <Box
-                height={"130px"}
-                borderRadius="16px 0px 0px 16px"
-                paddingY={"32px"}
-                paddingLeft={"32px"}
-                background={"rgba(255, 255, 255, 0.50)"}
-              >
-                <Flex gap={"24px"}>
-                  <Box
-                    rounded={"50%"}
-                    backgroundColor={"white"}
-                    display="flex"
-                    width={"56px"}
-                    height={"56px"}
-                    alignItems="center"
-                    padding={"14px"}
-                    justifyContent="center"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="28"
-                      height="28"
-                      viewBox="0 0 28 28"
-                      fill="none"
-                    >
-                      <path
-                        d="M23.3332 14H4.6665M4.6665 14L11.6665 21M4.6665 14L11.6665 7"
-                        stroke="#7F56D9"
-                        strokeWidth="2.33333"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </Box>
-                  <Box>
-                    <Flex flexDirection={"column"}>
-                      <Text fontSize={"30px"} fontWeight={"bold"}>
-                        Paste Your Code Here
-                      </Text>
-                      <Text>
-                        FIXR identifies technical debt and provides actionable
-                        insights.
-                      </Text>
-                    </Flex>
-                  </Box>
-                </Flex>
-              </Box>
+            {loading ? (
               <Flex
-                overflowX="hidden"
-                borderTop={"8.2px solid"}
-                borderLeft={"8.2px solid"}
-                borderTopRadius={"12.5px"}
+              mt={'50%'}
+                width="100%"
+                alignItems="center"
+                justifyContent="center"
+                alignContent={'center'}
               >
-                <Image
-                  src="https://s3-alpha-sig.figma.com/img/13af/247b/2b878258d83317e441ee599a93773d29?Expires=1722816000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=TFHG1wdVGCdJMq~VFXAQXWWn86RB~r-S7NYs58Q4cMwvLoVle3aRlexG-mAePy2Mi5CdbilShEjbH9Au2z1ro-Tw29vLBwmxuzV2qQ1GXgMNYYUDw6NhWP9POx6LNuDKVL08pMNGHeuhEgaFhrwK53YTftB3PldoKxniGUfyoEJuaC3M7SLUPslgVXWdyGYIJHEKgP6d3Zdlm2aiOD0SpzBi1miVlRDfdbLKjQ0cdC~EDEy4pW3PjyCJPF9n0wzEE87zIgcMjlvn3nRpCtz74LpzBIfJ~Kd2XWGlYkfRAsdi6uMFaywI5WsCdNfXRNrvtY3-Yq9ogO-HgxFdi8BcrA__"
-                  width="900px"
-                  minWidth="900px"
+                <Spinner
+                  thickness="4px"
+                  speed="0.65s"
+                  emptyColor="gray.200"
+                  color="black.500"
+                  size="xl"
                 />
               </Flex>
-            </Flex>
+            ) : (
+              <Flex
+                gap={"40px"}
+                paddingLeft={"34px"}
+                flexDirection={"column"}
+                paddingTop={"34px"}
+                width={"100%"}
+              >
+                <Box
+                  height={"130px"}
+                  borderRadius="16px 0px 0px 16px"
+                  paddingY={"32px"}
+                  paddingLeft={"32px"}
+                  background={"rgba(255, 255, 255, 0.50)"}
+                >
+                  <Flex gap={"24px"}>
+                    <Box
+                      rounded={"50%"}
+                      backgroundColor={"white"}
+                      display="flex"
+                      width={"56px"}
+                      height={"56px"}
+                      alignItems="center"
+                      padding={"14px"}
+                      justifyContent="center"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="28"
+                        height="28"
+                        viewBox="0 0 28 28"
+                        fill="none"
+                      >
+                        <path
+                          d="M23.3332 14H4.6665M4.6665 14L11.6665 21M4.6665 14L11.6665 7"
+                          stroke="#7F56D9"
+                          strokeWidth="2.33333"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </Box>
+                    <Box>
+                      <Flex flexDirection={"column"}>
+                        <Text fontSize={"30px"} fontWeight={"bold"}>
+                          Paste Your Code Here
+                        </Text>
+                        <Text>
+                          FIXR identifies technical debt and provides actionable
+                          insights.
+                        </Text>
+                      </Flex>
+                    </Box>
+                  </Flex>
+                </Box>
+                <Flex
+                  overflowX="hidden"
+                  borderTop={"8.2px solid"}
+                  borderLeft={"8.2px solid"}
+                  borderTopRadius={"12.5px"}
+                >
+                  <Image
+                    src="https://s3-alpha-sig.figma.com/img/13af/247b/2b878258d83317e441ee599a93773d29?Expires=1722816000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=TFHG1wdVGCdJMq~VFXAQXWWn86RB~r-S7NYs58Q4cMwvLoVle3aRlexG-mAePy2Mi5CdbilShEjbH9Au2z1ro-Tw29vLBwmxuzV2qQ1GXgMNYYUDw6NhWP9POx6LNuDKVL08pMNGHeuhEgaFhrwK53YTftB3PldoKxniGUfyoEJuaC3M7SLUPslgVXWdyGYIJHEKgP6d3Zdlm2aiOD0SpzBi1miVlRDfdbLKjQ0cdC~EDEy4pW3PjyCJPF9n0wzEE87zIgcMjlvn3nRpCtz74LpzBIfJ~Kd2XWGlYkfRAsdi6uMFaywI5WsCdNfXRNrvtY3-Yq9ogO-HgxFdi8BcrA__"
+                    width="900px"
+                    minWidth="900px"
+                  />
+                </Flex>
+              </Flex>
+            )}
           </Box>
         </Flex>
       )}
