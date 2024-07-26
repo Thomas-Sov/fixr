@@ -15,3 +15,15 @@ a {
 * {
   box-sizing: border-box;
 }
+.monaco-editor {
+  margin-top: 50px;
+}
+.monaco-diff-editor .editor.original {
+  margin-right: 64px; /* Adjust the value as needed */
+}
+
+.monaco-diff-editor .editor.modified {
+  margin-left: 64px; /* Adjust the value as needed */
+}
+
+
