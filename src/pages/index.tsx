@@ -5,6 +5,7 @@ import Head from "next/head";
 
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import styles from "./index.module.css";
+import { Flex } from "@chakra-ui/react";
 
 export default function Home() {
   const user = useUser();
@@ -17,10 +18,10 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-        <div>
+        <Flex>
           {!user.isSignedIn && (<SignInButton />)}
           {!!user.isSignedIn && (<SignOutButton />)}
-        </div>
+        </Flex>
       </main >
     </>
   );
