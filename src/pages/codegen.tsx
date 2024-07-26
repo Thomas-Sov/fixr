@@ -20,10 +20,7 @@ const CodeGen = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showCompare, setShowCompare] = useState<boolean>(false);
   const [filePath, setFilePath] = useState<string>("");
-  // ts-ignore
-  const handleSetFilePath = (value: string) => {
-    setFilePath(value);
-  };
+ 
   useEffect(() => {
     if (monaco) {
       console.log("here is the monaco instance:", monaco);
@@ -50,12 +47,15 @@ const CodeGen = () => {
       const { eslint_output, eslint_formatted_results, fixed_code } =
         await sonar.json();
       setUpdatedCode(fixed_code);
-      setLoading(false);
+    
 
       setShowCompare(true);
     } catch (error) {
       // catch error
       console.log(error);
+        alert(error)
+    } finally {
+        setLoading(false);
     }
   };
   const clearAll = () => {
@@ -85,7 +85,7 @@ const CodeGen = () => {
               original={inputCode}
               modified={updatedCode}
               height="70vh"
-              language="javascript"
+              language="typescript"
             />
 
             <Flex
@@ -172,7 +172,7 @@ const CodeGen = () => {
                 }}
                 value={inputCode}
                 defaultValue="// Paste code here"
-                language="javascript"
+                language="typescript"
               />
             </Box>
             <Flex flexDirection={"column"} width={"100%"}>
