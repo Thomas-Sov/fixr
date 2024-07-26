@@ -95,7 +95,7 @@ const CodeGen = () => {
             >
               <Text pb={2}>File path</Text>
               <Input
-                onClick={(event) => {
+                onChange={(event) => {
                   setFilePath(event.target?.value);
                 }}
                 width={"100%"}
@@ -109,18 +109,11 @@ const CodeGen = () => {
           </Box>
           <Flex gap={"64px"} mt={30}>
             <Flex
-              justifyContent={"space-between"}
+              justifyContent={"end"}
               padding={"24px"}
               width={"100%"}
               border={"1px solid #EAECF0"}
             >
-              <Button
-                backgroundColor={"white"}
-                color={"#6941C6"}
-                border={"1px solid #D6BBFB"}
-              >
-                Clear
-              </Button>
 
               <Button
                 backgroundColor={"#F2F4F7"}
@@ -170,7 +163,7 @@ const CodeGen = () => {
               border={"1px solid #EAECF0"}
             >
               <Editor
-                height="454px"
+                height="554px"
                 width="100%"
                 onChange={(value) => {
                   setInputCode(value ?? "");
@@ -183,7 +176,7 @@ const CodeGen = () => {
             <Flex flexDirection={"column"} width={"100%"}>
               <Text pb={2}>File path</Text>
               <Input
-                onClick={(event) => {
+                onChange={(event) => {
                   setFilePath(event.target?.value);
                 }}
                 width={"100%"}
