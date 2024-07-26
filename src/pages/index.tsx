@@ -3,9 +3,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import Head from "next/head";
 
-import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
+import { Box } from "@chakra-ui/react";
+import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import LandingPage from "~/components/LandingPage";
+import { PageHeader } from "~/components/PageHeader";
 import styles from "./index.module.css";
-import { Flex } from "@chakra-ui/react";
 
 export default function Home() {
   const user = useUser();
@@ -18,11 +20,16 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-        <Flex>
-          {!user.isSignedIn && (<SignInButton />)}
-          {!!user.isSignedIn && (<SignOutButton />)}
-        </Flex>
-      </main >
+        <Box p={10}>
+          <PageHeader />
+          <SignedOut>
+            <LandingPage />
+          </SignedOut>
+          <SignedIn>
+            <LandingPage />
+          </SignedIn>
+        </Box>
+      </main>
     </>
   );
 }
