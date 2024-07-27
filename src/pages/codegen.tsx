@@ -122,7 +122,7 @@ const CodeGen = () => {
               original={inputCode}
               modified={updatedCode}
               height="70vh"
-              language="typescript"
+              language="javascript"
             />
 
             <Flex
@@ -206,29 +206,17 @@ const CodeGen = () => {
               border={"1px solid #EAECF0"}
             >
               <Editor
-                height="554px"
+                height="654px"
                 width="100%"
                 onChange={(value) => {
                   setInputCode(value ?? "");
                 }}
                 value={inputCode}
                 defaultValue="// Paste code here"
-                language="typescript"
+                language="javascript"
               />
             </Box>
-            <Flex flexDirection={"column"} width={"100%"}>
-              <Text pb={2}>File path</Text>
-              <Input
-                onChange={(event) => {
-                  setFilePath(event.target?.value);
-                }}
-                width={"100%"}
-                placeholder="Enter file path"
-              ></Input>
-              <Text color={"#475467"} pt={1}>
-                The file path of the original code file
-              </Text>
-            </Flex>
+           
             <Flex
               justifyContent={"space-between"}
               padding={"24px"}
