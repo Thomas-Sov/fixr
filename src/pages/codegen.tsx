@@ -22,16 +22,17 @@ const CodeGen = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [showCompare, setShowCompare] = useState<boolean>(false);
-  const [commitMessage, setCommitMessage]  =  useState<string>("");
+  const [commitMessage, setCommitMessage] = useState<string>("");
   const [filePath, setFilePath] = useState<string>("");
+  const [github, setGithub] = useState({});
   useEffect(() => {
     if (monaco) {
       console.log("here is the monaco instance:", monaco);
     }
   }, [monaco]);
   function generateRandomText(length = 4) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    let result = '';
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    let result = "";
     const charactersLength = characters.length;
     for (let i = 0; i < length; i++) {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -41,21 +42,26 @@ const CodeGen = () => {
   const fixTheCode = async () => {
     setLoading(true);
     try {
-      const sonar = await fetch("https://fixr-code.onrender.com/fix-code", {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify({
-          code: inputCode,
-          file_path: filePath,
-        }),
-      });
+      const sonar = await fetch(
+        "https://fixr-code-1ffp.onrender.com/fix-code",
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+          body: JSON.stringify({
+            code: inputCode,
+            file_path: filePath,
+          }),
+        }
+      );
 
       const { eslint_output, eslint_formatted_results, fixed_code } =
         await sonar.json();
-        setCommitMessage(eslint_formatted_results)
-        const newtest = fixed_code.replace(/^\{\s*"code":\s*/, '').replace(/\s*}$/, '')
+      setCommitMessage(eslint_formatted_results);
+      const newtest = fixed_code
+        .replace(/^\{\s*"code":\s*/, "")
+        .replace(/\s*}$/, "");
       setUpdatedCode(newtest);
 
       setShowCompare(true);
@@ -67,10 +73,55 @@ const CodeGen = () => {
       setLoading(false);
     }
   };
+  function parseGitHubUrl(url: string) {
+    const regex =
+      /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/;
+    const match = url.match(regex);
+
+    if (match) {
+      return {
+        owner: match[1],
+        repo: match[2],
+        branch: match[3],
+        filePath: match[4],
+      };
+    } else {
+      throw new Error("Invalid GitHub URL");
+    }
+  }
+  const getCode = async () => {
+    try {
+      const github = parseGitHubUrl(filePath);
+      setGithub(github);
+      const res = await fetch("https://fixr-code-1ffp.onrender.com/read-code", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        method: "POST",
+        body: JSON.stringify({
+          owner: github.owner,
+          repo: github.repo,
+          filePath: github.filePath,
+          githubToken: process.env.NEXT_PUBLIC_AB_GITHUB_AUTH_TOKEN,
+        }),
+      });
+      const { content } = await res.json();
+      setInputCode(content);
+    } catch (error) {
+      alert("enter valid github url");
+    }
+  };
+  useEffect(() => {
+    if (filePath) {
+      getCode();
+    }
+  }, [filePath]);
+  console.log(github)
   const submitToGitHb = async () => {
     try {
       setSubmitting(true);
-      await fetch("https://fixr-code.onrender.com/pull-request", {
+      await fetch("https://fixr-code-1ffp.onrender.com/pull-request", {
         headers: {
           "Content-Type": "application/json",
         },
@@ -78,16 +129,20 @@ const CodeGen = () => {
         body: JSON.stringify({
           codeChanges: [
             {
-              filePath: filePath,
+              filePath: github?.filePath,
               content: updatedCode,
             },
           ],
-          commitMessage: "Automated code change updates from FIXR, error found : "+ commitMessage,
+          commitMessage:
+            "Automated code change updates from FIXR, error found : " +
+            commitMessage,
           githubToken: process.env.NEXT_PUBLIC_AB_GITHUB_AUTH_TOKEN,
-          owner: "Thomas-Sov",
-          repo: "fixr",
+          owner: github?.owner,
+          repo: github?.repo,
           baseBranch: "main",
-          featureBranch: `automated-changed-pr/${filePath}${generateRandomText(4)}`,
+          featureBranch: `automated-changed-pr/${github.filePath}${generateRandomText(
+            4
+          )}`,
         }),
       });
       setSubmitting(false);
@@ -109,82 +164,78 @@ const CodeGen = () => {
       </Box>
 
       {showCompare ? (
-        <Flex
-          flexDirection={"column"}
-          minHeight={"100vh"}
-          width="100%"
-          gap={"32px"}
-          paddingBottom={"100px"}
-          overflow={"hidden"}
-          px={"40px"}
-        >
-          <Box position={"relative"}>
-            <DiffEditor
-              original={inputCode}
-              modified={updatedCode}
-              height="70vh"
-              language="text"
-            />
-
-            <Flex
-              flexDirection={"column"}
-              width={"48%"}
-              position={"absolute"}
-              bottom={-5}
-              background={"white"}
-            >
-              <Text pb={2}>File path</Text>
-              <Input
-                onChange={(event) => {
-                  setFilePath(event.target?.value);
-                }}
+        <>
+          <Flex
+            flexDirection={"column"}
+            width={"100%"}
+            maxWidth={"1280px"}
+            background={"white"}
+            mx={"auto"}
+          >
+            <Text pb={2}>File path</Text>
+            <Input
+              disabled={true}
+              width={"100%"}
+              defaultValue={filePath}
+              placeholder="Enter file path"
+            ></Input>
+          </Flex>
+          <Flex
+            flexDirection={"column"}
+            minHeight={"100vh"}
+            width="100%"
+            gap={"32px"}
+            paddingBottom={"100px"}
+            overflow={"hidden"}
+            px={"40px"}
+          >
+            <Box position={"relative"}>
+              <DiffEditor
+                original={inputCode}
+                modified={updatedCode}
+                height="70vh"
+                language="text"
+              />
+            </Box>
+            <Flex gap={"64px"} mt={30}>
+              <Flex
+                justifyContent={"end"}
+                padding={"24px"}
                 width={"100%"}
-                defaultValue={filePath}
-                placeholder="Enter file path"
-              ></Input>
-              <Text color={"#475467"} pt={1}>
-                The file path of the original code file
-              </Text>
-            </Flex>
-          </Box>
-          <Flex gap={"64px"} mt={30}>
-            <Flex
-              justifyContent={"end"}
-              padding={"24px"}
-              width={"100%"}
-              border={"1px solid #EAECF0"}
-            >
-              <Button
-                backgroundColor={"#F2F4F7"}
-                onClick={() => {
-                  if (showCompare) {
-                    setShowCompare(false);
-                  } else {
-                    fixTheCode();
-                  }
-                }}
+                border={"1px solid #EAECF0"}
               >
-                {showCompare ? "Cancel" : "Submit"}
-              </Button>
-            </Flex>
+                <Button
+                  backgroundColor={"#F2F4F7"}
+                  onClick={() => {
+                    if (showCompare) {
+                      setShowCompare(false);
+                    } else {
+                      fixTheCode();
+                    }
+                  }}
+                >
+                  {showCompare ? "Cancel" : "Submit"}
+                </Button>
+              </Flex>
 
-            <Flex
-              justifyContent={"end"}
-              padding={"24px"}
-              width={"100%"}
-              border={"1px solid #EAECF0"}
-            >
-              <Button
-                backgroundColor={"#7F56D9"}
-                color={"white"}
-                onClick={submitToGitHb}
-                disabled={submitting}
+              <Flex
+                justifyContent={"end"}
+                padding={"24px"}
+                width={"100%"}
+                border={"1px solid #EAECF0"}
               >
-                Create Pull Request
-              </Button>
+                <Button
+                  backgroundColor={"#7F56D9"}
+                  color={"white"}
+                  onClick={submitToGitHb}
+                  disabled={submitting}
+                >
+                  Create Pull Request
+                </Button>
+              </Flex>
             </Flex>
           </Flex>
-        </Flex>
+        </>
       ) : (
         <Flex
           width="100%"
@@ -217,7 +268,14 @@ const CodeGen = () => {
                 language="text"
               />
             </Box>
-           
+            <Input
+              onChange={(event) => {
+                setFilePath(event.target?.value);
+              }}
+              width={"100%"}
+              defaultValue={filePath}
+              placeholder="Enter github url to a file you want to anylize"
+            ></Input>
             <Flex
               justifyContent={"space-between"}
               padding={"24px"}
