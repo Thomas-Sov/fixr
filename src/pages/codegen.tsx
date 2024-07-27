@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Editor, { useMonaco, DiffEditor } from "@monaco-editor/react";
+
 import {
   Container,
   Flex,
@@ -22,12 +23,20 @@ const CodeGen = () => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [showCompare, setShowCompare] = useState<boolean>(false);
   const [filePath, setFilePath] = useState<string>("");
-
   useEffect(() => {
     if (monaco) {
       console.log("here is the monaco instance:", monaco);
     }
   }, [monaco]);
+  function generateRandomText(length = 4) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
   const fixTheCode = async () => {
     setLoading(true);
     try {
@@ -73,11 +82,11 @@ const CodeGen = () => {
             },
           ],
           commitMessage: "Automated code change updates",
-          githubToken: "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",
+          githubToken: process.env.NEXT_PUBLIC_AB_GITHUB_AUTH_TOKEN,
           owner: "Thomas-Sov",
           repo: "fixr",
           baseBranch: "main",
-          featureBranch: `automated-changed-pr/${filePath}1`,
+          featureBranch: `automated-changed-pr/${filePath}${generateRandomText(4)}`,
         }),
       });
       setSubmitting(false);
