@@ -1,5 +1,7 @@
 import Editor, { DiffEditor, useMonaco } from "@monaco-editor/react";
 import { useEffect, useState } from "react";
+import Confetti from "react-confetti";
+import useWindowSize from "react-use/lib/useWindowSize";
 
 import {
   Box,
@@ -12,12 +14,15 @@ import {
 } from "@chakra-ui/react";
 
 const CodeGen = () => {
+  const { width, height } = useWindowSize();
+
   const monaco = useMonaco();
   const [updatedCode, setUpdatedCode] = useState<string>("");
   const [inputCode, setInputCode] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [showCompare, setShowCompare] = useState<boolean>(false);
+  const [showConfetti, setConfetti] = useState<boolean>(false);
   const [commitMessage, setCommitMessage] = useState<string>("");
   const [filePath, setFilePath] = useState<string>("");
   const [github, setGithub] = useState({});
@@ -146,6 +151,10 @@ const CodeGen = () => {
         }),
       });
       setSubmitting(false);
+      setConfetti(true);
+      setTimeout(() => {
+        setConfetti(false);
+      }, 7000);
     } catch (error) {
       alert(error);
       setSubmitting(false);
@@ -441,6 +450,11 @@ const CodeGen = () => {
             )}
           </Box>
         </Flex>
+      )}
+      {showConfetti && (
+        <Box overflowX={"hidden"}>
+          <Confetti width={1300} height={3000} />{" "}
+        </Box>
       )}
     </>
   );
