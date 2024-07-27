@@ -22,6 +22,7 @@ const CodeGen = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [showCompare, setShowCompare] = useState<boolean>(false);
+  const [commitMessage, setCommitMessage]  =  useState<string>("");
   const [filePath, setFilePath] = useState<string>("");
   useEffect(() => {
     if (monaco) {
@@ -53,7 +54,7 @@ const CodeGen = () => {
 
       const { eslint_output, eslint_formatted_results, fixed_code } =
         await sonar.json();
-
+        setCommitMessage(eslint_formatted_results)
         const newtest = fixed_code.replace(/^\{\s*"code":\s*/, '').replace(/\s*}$/, '')
       setUpdatedCode(newtest);
 
@@ -81,7 +82,7 @@ const CodeGen = () => {
               content: updatedCode,
             },
           ],
-          commitMessage: "Automated code change updates",
+          commitMessage: "Automated code change updates, error found : "+ commitMessage,
           githubToken: process.env.NEXT_PUBLIC_AB_GITHUB_AUTH_TOKEN,
           owner: "Thomas-Sov",
           repo: "fixr",
