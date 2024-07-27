@@ -82,7 +82,7 @@ const CodeGen = () => {
               content: updatedCode,
             },
           ],
-          commitMessage: "Automated code change updates, error found : "+ commitMessage,
+          commitMessage: "Automated code change updates from FIXR, error found : "+ commitMessage,
           githubToken: process.env.NEXT_PUBLIC_AB_GITHUB_AUTH_TOKEN,
           owner: "Thomas-Sov",
           repo: "fixr",
