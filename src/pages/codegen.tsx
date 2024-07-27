@@ -8,7 +8,7 @@ import {
   Image,
   Input,
   Spinner,
-  Text
+  Text,
 } from "@chakra-ui/react";
 
 const CodeGen = () => {
@@ -109,12 +109,16 @@ const CodeGen = () => {
     }
   };
   useEffect(() => {
-    if (filePath) {
+    if (filePath && !showCompare) {
       getCode();
+    } else if (filePath) {
+      const github = parseGitHubUrl(filePath);
+      setGithub(github);
     }
   }, [filePath]);
-  console.log(github)
+  console.log(github);
   const submitToGitHb = async () => {
+    if (!github?.filePath) return;
     try {
       setSubmitting(true);
       await fetch("https://fixr-code-1ffp.onrender.com/pull-request", {
@@ -136,9 +140,9 @@ const CodeGen = () => {
           owner: github?.owner,
           repo: github?.repo,
           baseBranch: "main",
-          featureBranch: `automated-changed-pr/${github.filePath}${generateRandomText(
-            4
-          )}`,
+          featureBranch: `automated-changed-pr/${
+            github.filePath
+          }${generateRandomText(4)}`,
         }),
       });
       setSubmitting(false);
@@ -155,23 +159,30 @@ const CodeGen = () => {
   };
   return (
     <>
+      <Flex
+        flexDirection={"column"}
+        width={"50%"}
+        maxWidth={"1280px"}
+        background={"white"}
+        px={"40px"}
+        mb={3}
+      >
+        <Text pb={2}>File path</Text>
+        <Input
+          onChange={(event) => {
+            setFilePath(event.target?.value);
+          }}
+          width={"100%"}
+          defaultValue={filePath}
+          placeholder={`${
+            showCompare
+              ? "Enter Your Github URL to make a PR"
+              : "Enter the github url to a file you want to analyse"
+          }`}
+        ></Input>
+      </Flex>
       {showCompare ? (
         <>
-          <Flex
-            flexDirection={"column"}
-            width={"100%"}
-            maxWidth={"1280px"}
-            background={"white"}
-            mx={"auto"}
-          >
-            <Text pb={2}>File path</Text>
-            <Input
-              disabled={true}
-              width={"100%"}
-              defaultValue={filePath}
-              placeholder="Enter file path"
-            ></Input>
-          </Flex>
           <Flex
             flexDirection={"column"}
             minHeight={"100vh"}
@@ -220,9 +231,26 @@ const CodeGen = () => {
                   backgroundColor={"#7F56D9"}
                   color={"white"}
                   onClick={submitToGitHb}
-                  disabled={submitting}
+                  disabled={github?.repo ? true : false}
                 >
-                  Create Pull Request
+                  {submitting ? (
+                    <Flex
+                      height="20px"
+                      width="20px"
+                      alignItems="center"
+                      justifyContent="center"
+                      alignContent={"center"}
+                    >
+                      <Spinner
+                        thickness="2px"
+                        speed="0.65s"
+                        emptyColor="gray.200"
+                        color="black.500"
+                      />
+                    </Flex>
+                  ) : (
+                    <> Create Pull Request</>
+                  )}
                 </Button>
               </Flex>
             </Flex>
@@ -260,14 +288,7 @@ const CodeGen = () => {
                 language="text"
               />
             </Box>
-            <Input
-              onChange={(event) => {
-                setFilePath(event.target?.value);
-              }}
-              width={"100%"}
-              defaultValue={filePath}
-              placeholder="Enter the github url to a file you want to analyse"
-            ></Input>
+
             <Flex
               justifyContent={"space-between"}
               padding={"24px"}
