@@ -155,6 +155,7 @@ const CodeGen = () => {
     setInputCode("");
     setUpdatedCode("");
     setFilePath("");
+    se
     setShowCompare(false);
   };
   return (
@@ -274,7 +275,7 @@ const CodeGen = () => {
               }}
               width={"100%"}
               defaultValue={filePath}
-              placeholder="Enter github url to a file you want to anylize"
+              placeholder="Enter the github url to a file you want to analyse"
             ></Input>
             <Flex
               justifyContent={"space-between"}
