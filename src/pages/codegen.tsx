@@ -122,7 +122,7 @@ const CodeGen = () => {
               original={inputCode}
               modified={updatedCode}
               height="70vh"
-              language="javascript"
+              language="text"
             />
 
             <Flex
@@ -213,7 +213,7 @@ const CodeGen = () => {
                 }}
                 value={inputCode}
                 defaultValue="// Paste code here"
-                language="javascript"
+                language="text"
               />
             </Box>
            
