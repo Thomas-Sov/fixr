@@ -1,21 +1,17 @@
-import React, { useEffect, useState } from "react";
-import Editor, { useMonaco, DiffEditor } from "@monaco-editor/react";
+import Editor, { DiffEditor, useMonaco } from "@monaco-editor/react";
+import { useEffect, useState } from "react";
 
 import {
-  Container,
-  Flex,
-  Button,
   Box,
-  Text,
+  Button,
+  Flex,
   Image,
   Input,
-  keyframes,
   Spinner,
+  Text
 } from "@chakra-ui/react";
-import { PageHeader } from "~/components/PageHeader";
-import { useUser } from "@clerk/nextjs";
+
 const CodeGen = () => {
-  const user = useUser();
   const monaco = useMonaco();
   const [updatedCode, setUpdatedCode] = useState<string>("");
   const [inputCode, setInputCode] = useState<string>("");
@@ -155,15 +151,10 @@ const CodeGen = () => {
     setInputCode("");
     setUpdatedCode("");
     setFilePath("");
-    se
     setShowCompare(false);
   };
   return (
     <>
-      <Box paddingTop={10} paddingX={10}>
-        <PageHeader />
-      </Box>
-
       {showCompare ? (
         <>
           <Flex

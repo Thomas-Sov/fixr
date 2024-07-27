@@ -1,16 +1,20 @@
-import { Button, Flex, Text } from "@chakra-ui/react";
+import { Button, Flex, Link } from "@chakra-ui/react";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { Logo } from "./Logo";
+import { Logo } from ".";
 
-export function PageHeader() {
+const PageHeader = () => {
   return (
     <Flex justifyContent="space-between" mb={20}>
       <Flex alignItems="center" gap={10}>
-        <Logo />
-        <Text color="gray.600">Home</Text>
-        <Text color="gray.600">Products</Text>
-        <Text color="gray.600">Resources</Text>
-        <Text color="gray.600">Pricing</Text>
+        <Link href='/' color="gray.600" _hover={{ textDecoration: '' }}>
+          <Logo />
+        </Link>
+        <Link href='/' color="gray.600" _hover={{ textDecoration: '' }}>
+          Overview
+        </Link>
+        <Link href='/pricing' color="gray.600" _hover={{ textDecoration: '' }}>
+          Pricing
+        </Link>
       </Flex>
       <Flex alignItems="center" gap={6}>
         <SignedIn>
@@ -27,3 +31,5 @@ export function PageHeader() {
     </Flex>
   );
 }
+
+export default PageHeader;

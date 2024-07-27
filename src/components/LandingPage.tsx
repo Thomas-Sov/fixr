@@ -1,18 +1,26 @@
-import { Button, Flex, Image, Text } from "@chakra-ui/react";
+import { Button, Flex, Image, Link, Text } from "@chakra-ui/react";
 import { SignedOut, SignInButton } from "@clerk/clerk-react";
 import Image1 from "../assets/image.png";
 import Image2 from "../assets/image2.png";
 import Image3 from "../assets/image3.png";
-export default function LandingPage() {
+import Image4 from "../assets/Container.png";
+import { SignedIn } from "@clerk/nextjs";
+
+const LandingPage = () => {
   return (
     <>
       <Flex flexDir={"column"} alignItems={"center"} gap={8}>
         <Text color={"gray.900"} fontSize={40}>
+          Eliminate tech debt now!
+        </Text>
+        <Text color={"gray.500"} fontSize={16}>
           Clean Code, Lasting Quality
         </Text>
-        <Flex gap={8}>
+        <Flex gap={2}>
           <Button bg={"white"} borderWidth={1} borderColor={"lightgray"}>
-            View pricing options
+            <Link href='/pricing' color="gray.600" _hover={{ textDecoration: '' }}>
+              View pricing options
+            </Link>
           </Button>
           <SignedOut>
             <SignInButton>
@@ -21,6 +29,13 @@ export default function LandingPage() {
               </Button>
             </SignInButton>
           </SignedOut>
+          <SignedIn>
+            <Button bg={"purple.600"} >
+              <Link href='/codegen' color={"white"} _hover={{ textDecoration: '' }}>
+                Try it out
+              </Link>
+            </Button>
+          </SignedIn>
         </Flex>
       </Flex>
       <Flex mt={10} gap={10} bg={"gray.100"} borderRadius={30}>
@@ -76,11 +91,13 @@ export default function LandingPage() {
           Start your 30-Day free trial
         </Text>
         <Text color={"gray.500"} fontSize={20}>
-          Start your 30-Day free trial
+          Join us in delivering high-quality code
         </Text>
-        <Flex gap={8}>
+        <Flex gap={2}>
           <Button bg={"white"} borderWidth={1} borderColor={"lightgray"}>
-            View pricing options
+            <Link href='/pricing' color="gray.600" _hover={{ textDecoration: '' }}>
+              View pricing options
+            </Link>
           </Button>
           <SignedOut>
             <SignInButton>
@@ -89,8 +106,21 @@ export default function LandingPage() {
               </Button>
             </SignInButton>
           </SignedOut>
+          <SignedIn>
+            <Button bg={"purple.600"} >
+              <Link href='/codegen' color={"white"} _hover={{ textDecoration: '' }}>
+                Try it out
+              </Link>
+            </Button>
+          </SignedIn>
         </Flex>
+      </Flex>
+
+      <Flex flexDir={"column"} alignItems={"center"} mt={20}>
+        <Image src={Image4.src} alt="code editor demo" />
       </Flex>
     </>
   );
 }
+
+export default LandingPage;
